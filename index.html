@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JIALIN CHEN</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fff;
+            --text-main: #050505;
+            --text-dim: #666;
+            --dot-color: #aaa;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Raleway', sans-serif;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Corner brackets */
+        .corner {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            border: 4px solid var(--text-main);
+            z-index: 20;
+            opacity: 0;
+            /* start hidden for animation */
+        }
+
+        @keyframes flyInTL {
+            0% {
+                opacity: 0;
+                transform: translate(-40px, -40px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translate(0, 0);
+            }
+        }
+
+        @keyframes flyInTR {
+            0% {
+                opacity: 0;
+                transform: translate(40px, -40px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translate(0, 0);
+            }
+        }
+
+        @keyframes flyInBL {
+            0% {
+                opacity: 0;
+                transform: translate(-40px, 40px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translate(0, 0);
+            }
+        }
+
+        @keyframes flyInBR {
+            0% {
+                opacity: 0;
+                transform: translate(40px, 40px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translate(0, 0);
+            }
+        }
+
+        .corner-tl {
+            top: 32px;
+            left: 32px;
+            border-right: none;
+            border-bottom: none;
+            animation: flyInTL 2.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .corner-tr {
+            top: 32px;
+            right: 32px;
+            border-left: none;
+            border-bottom: none;
+            animation: flyInTR 2.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .corner-bl {
+            bottom: 32px;
+            left: 32px;
+            border-right: none;
+            border-top: none;
+            animation: flyInBL 2.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .corner-br {
+            bottom: 32px;
+            right: 32px;
+            border-left: none;
+            border-top: none;
+            animation: flyInBR 2.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        main {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 10;
+        }
+
+        .hero-mark {
+            text-transform: uppercase;
+            font-weight: 400;
+            /* slightly thinner to match image feel */
+            color: var(--text-main);
+            letter-spacing: 0.15em;
+            font-size: 24px;
+        }
+
+        nav {
+            position: absolute;
+            bottom: 54px;
+            /* Matches precisely the geometric horizontal offset spacing */
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding: 0 54px;
+            /* Shifted more inwards to align visual edge of text with the inner tip of the bracket*/
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .nav-left,
+        .nav-right {
+            text-transform: uppercase;
+            font-size: 10px;
+            /* very small font */
+            letter-spacing: 0.12em;
+            pointer-events: auto;
+            font-weight: 500;
+            color: var(--text-dim);
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .nav-left .dot {
+            color: var(--dot-color);
+            font-size: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Corner Brackets -->
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div>
+    <div class="corner corner-br"></div>
+
+    <!-- Main Content -->
+    <main>
+        <div class="hero-mark" id="scramble-text">JIALIN CHEN</div>
+    </main>
+
+    <!-- Bottom Nav -->
+    <nav>
+        <div class="nav-left">
+            <span id="scramble-me">HARVARD</span>
+        </div>
+        <div class="nav-right" id="scramble-boston">BOSTON</div>
+    </nav>
+
+    <script>
+        class TextScramble {
+            constructor(el) {
+                this.el = el;
+                this.chars = '!<>-_\\\\/[]{}—=+*^?#________';
+                this.update = this.update.bind(this);
+            }
+
+            setText(newText) {
+                const oldText = this.el.innerText;
+                const length = Math.max(oldText.length, newText.length);
+                const promise = new Promise((resolve) => this.resolve = resolve);
+                this.queue = [];
+                for (let i = 0; i < length; i++) {
+                    const from = oldText[i] || '';
+                    const to = newText[i] || '';
+                    const start = Math.floor(Math.random() * 75);
+                    const end = start + Math.floor(Math.random() * 75);
+                    this.queue.push({ from, to, start, end });
+                }
+                cancelAnimationFrame(this.frameRequest);
+                this.frame = 0;
+                this.update();
+                return promise;
+            }
+
+            update() {
+                let output = '';
+                let complete = 0;
+                for (let i = 0, n = this.queue.length; i < n; i++) {
+                    let { from, to, start, end, char } = this.queue[i];
+                    if (this.frame >= end) {
+                        complete++;
+                        output += to;
+                    } else if (this.frame >= start) {
+                        if (!char || Math.random() < 0.28) {
+                            char = this.randomChar();
+                            this.queue[i].char = char;
+                        }
+                        output += char;
+                    } else {
+                        output += from;
+                    }
+                }
+                this.el.innerText = output;
+                if (complete === this.queue.length) {
+                    this.resolve();
+                } else {
+                    this.frameRequest = requestAnimationFrame(this.update);
+                    this.frame++;
+                }
+            }
+
+            randomChar() {
+                return this.chars[Math.floor(Math.random() * this.chars.length)];
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const elCenter = document.getElementById('scramble-text');
+            const elMe = document.getElementById('scramble-me');
+            const elBoston = document.getElementById('scramble-boston');
+
+            const fxCenter = new TextScramble(elCenter);
+            const fxMe = new TextScramble(elMe);
+            const fxBoston = new TextScramble(elBoston);
+
+            // Hide the text initially or set to blank before scramble
+            elCenter.innerText = '';
+            elMe.innerText = '';
+            elBoston.innerText = '';
+
+            // Scramble to target string over the same duration as corners
+            setTimeout(() => {
+                fxCenter.setText('JIALIN CHEN');
+                fxMe.setText('HARVARD');
+                fxBoston.setText('BOSTON');
+            }, 100);
+        });
+    </script>
+</body>
+
+</html>

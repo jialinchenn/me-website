@@ -183,7 +183,6 @@
         }
 
         .hero-mark {
-            text-transform: uppercase;
             font-weight: 400;
             /* slightly thinner to match image feel */
             color: var(--text-main);
@@ -191,58 +190,7 @@
             font-size: 24px;
         }
 
-        .status-mark {
-            text-transform: uppercase;
-            font-weight: 500;
-            color: var(--text-dim);
-            letter-spacing: 0.12em;
-            font-size: 10px;
-            margin-top: 12px;
-            opacity: 0.8;
-            transition: opacity 0.3s ease;
-        }
 
-        .status-mark:hover {
-            opacity: 1;
-        }
-
-        nav {
-            position: absolute;
-            bottom: 54px;
-            /* Matches precisely the geometric horizontal offset spacing */
-            left: 0;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            padding: 0 54px;
-            /* Shifted more inwards to align visual edge of text with the inner tip of the bracket*/
-            z-index: 10;
-            pointer-events: none;
-            transform-origin: bottom;
-        }
-
-        .nav-left,
-        .nav-right {
-            text-transform: uppercase;
-            font-size: 10px;
-            /* very small font */
-            letter-spacing: 0.12em;
-            pointer-events: auto;
-            font-weight: 500;
-            color: var(--text-dim);
-        }
-
-        .nav-left {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .nav-left .dot {
-            color: var(--dot-color);
-            font-size: 8px;
-        }
 
     </style>
 </head>
@@ -259,19 +207,11 @@
     <!-- Main Content -->
     <main>
         <a href="me.html" style="color: inherit; text-decoration: none; cursor: pointer;">
-            <div class="hero-mark" id="scramble-text">JIALIN CHEN</div>
-            <div class="status-mark" id="scramble-status">[UNDER CONSTRUCTION]</div>
+            <div class="hero-mark" id="scramble-text">jialin.me</div>
         </a>
     </main>
 
 
-    <!-- Bottom Nav -->
-    <nav>
-        <div class="nav-left">
-            <a href="harvard.html" style="color: inherit; text-decoration: none;"><span id="scramble-me">HARVARD</span></a>
-        </div>
-        <div class="nav-right" id="scramble-boston">BOSTON</div>
-    </nav>
 
     <script>
         class TextScramble {
@@ -356,31 +296,16 @@
         document.addEventListener("DOMContentLoaded", () => {
             initURLCleanup();
             const elCenter = document.getElementById('scramble-text');
-            const elStatus = document.getElementById('scramble-status');
-            const elMe = document.getElementById('scramble-me');
-            const elBoston = document.getElementById('scramble-boston');
-
             const fxCenter = new TextScramble(elCenter);
-            const fxStatus = new TextScramble(elStatus);
-            const fxMe = new TextScramble(elMe);
-            const fxBoston = new TextScramble(elBoston);
-
-            // Hide the text initially or set to blank before scramble
             elCenter.innerText = '';
-            elStatus.innerText = '';
-            elMe.innerText = '';
-            elBoston.innerText = '';
 
             // Scramble to target string over the same duration as corners
             setTimeout(() => {
-                fxCenter.setText('JIALIN CHEN');
-                fxStatus.setText('[UNDER CONSTRUCTION]');
-                fxMe.setText('HARVARD');
-                fxBoston.setText('BOSTON');
+                fxCenter.setText('jialin.me');
             }, 100);
 
             // Exit animation trigger
-            const links = document.querySelectorAll('main a, nav a');
+            const links = document.querySelectorAll('main a');
             links.forEach(link => {
                 link.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -391,7 +316,6 @@
                     });
 
                     document.querySelector('main').classList.add('exit-main');
-                    document.querySelector('nav').classList.add('exit-nav');
 
                     setTimeout(() => {
                         window.location.href = targetUrl;

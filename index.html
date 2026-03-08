@@ -122,6 +122,56 @@
             animation: flyInBR 2.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
+        /* Exit animations */
+        @keyframes shootOutTL {
+            0% { transform: translate(0, 0); opacity: 1; }
+            20% { transform: translate(10px, 10px); opacity: 1; }
+            100% { transform: translate(-100vw, -100vh); opacity: 0; }
+        }
+        @keyframes shootOutTR {
+            0% { transform: translate(0, 0); opacity: 1; }
+            20% { transform: translate(-10px, 10px); opacity: 1; }
+            100% { transform: translate(100vw, -100vh); opacity: 0; }
+        }
+        @keyframes shootOutBL {
+            0% { transform: translate(0, 0); opacity: 1; }
+            20% { transform: translate(10px, -10px); opacity: 1; }
+            100% { transform: translate(-100vw, 100vh); opacity: 0; }
+        }
+        @keyframes shootOutBR {
+            0% { transform: translate(0, 0); opacity: 1; }
+            20% { transform: translate(-10px, -10px); opacity: 1; }
+            100% { transform: translate(100vw, 100vh); opacity: 0; }
+        }
+
+        .corner-tl.exit { animation: shootOutTL 0.8s cubic-bezier(0.7, 0, 0.3, 1) forwards; }
+        .corner-tr.exit { animation: shootOutTR 0.8s cubic-bezier(0.7, 0, 0.3, 1) forwards; }
+        .corner-bl.exit { animation: shootOutBL 0.8s cubic-bezier(0.7, 0, 0.3, 1) forwards; }
+        .corner-br.exit { animation: shootOutBR 0.8s cubic-bezier(0.7, 0, 0.3, 1) forwards; }
+
+        /* Stabilized Flatten exit animations */
+        @keyframes flattenOutMain {
+            0% { transform: translate(-50%, -50%) scaleY(1); opacity: 1; }
+            40% { transform: translate(-50%, -50%) scaleY(0.02); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scaleY(0.01); opacity: 0; }
+        }
+
+        @keyframes flattenOutSimple {
+            0% { transform: scaleY(1); opacity: 1; }
+            40% { transform: scaleY(0.02); opacity: 1; }
+            100% { transform: scaleY(0.01); opacity: 0; }
+        }
+
+        .exit-main {
+            animation: flattenOutMain 0.6s cubic-bezier(0.7, 0, 0.3, 1) forwards;
+            pointer-events: none;
+        }
+
+        .exit-nav {
+            animation: flattenOutSimple 0.6s cubic-bezier(0.7, 0, 0.3, 1) forwards;
+            pointer-events: none;
+        }
+
         main {
             position: absolute;
             top: 50%;
@@ -129,6 +179,7 @@
             transform: translate(-50%, -50%);
             text-align: center;
             z-index: 10;
+            transform-origin: center;
         }
 
         .hero-mark {
@@ -138,6 +189,21 @@
             color: var(--text-main);
             letter-spacing: 0.15em;
             font-size: 24px;
+        }
+
+        .status-mark {
+            text-transform: uppercase;
+            font-weight: 500;
+            color: var(--text-dim);
+            letter-spacing: 0.12em;
+            font-size: 10px;
+            margin-top: 12px;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+
+        .status-mark:hover {
+            opacity: 1;
         }
 
         nav {
@@ -153,6 +219,7 @@
             /* Shifted more inwards to align visual edge of text with the inner tip of the bracket*/
             z-index: 10;
             pointer-events: none;
+            transform-origin: bottom;
         }
 
         .nav-left,
@@ -176,6 +243,23 @@
             color: var(--dot-color);
             font-size: 8px;
         }
+
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        #canvas-bg {
+            z-index: 5;
+        }
+
+        #canvas-fg {
+            z-index: 15;
+        }
     </style>
 </head>
 
@@ -187,17 +271,24 @@
     <div class="corner corner-bl"></div>
     <div class="corner corner-br"></div>
 
+    <!-- Background Canvas (behind text) -->
+    <canvas id="canvas-bg"></canvas>
+
     <!-- Main Content -->
     <main>
         <a href="me.html" style="color: inherit; text-decoration: none; cursor: pointer;">
             <div class="hero-mark" id="scramble-text">JIALIN CHEN</div>
+            <div class="status-mark" id="scramble-status">[UNDER CONSTRUCTION]</div>
         </a>
     </main>
+
+    <!-- Foreground Canvas (in front of text) -->
+    <canvas id="canvas-fg"></canvas>
 
     <!-- Bottom Nav -->
     <nav>
         <div class="nav-left">
-            <span id="scramble-me">HARVARD</span>
+            <a href="harvard.html" style="color: inherit; text-decoration: none;"><span id="scramble-me">HARVARD</span></a>
         </div>
         <div class="nav-right" id="scramble-boston">BOSTON</div>
     </nav>
@@ -272,26 +363,194 @@
             }
         }
 
+        class Comet {
+            constructor(canvasBg, canvasFg) {
+                this.canvasBg = canvasBg;
+                this.canvasFg = canvasFg;
+                this.ctxBg = canvasBg.getContext('2d');
+                this.ctxFg = canvasFg.getContext('2d');
+                this.reset();
+            }
+
+            reset() {
+                // Each comet gets its own elliptical orbit with random tilt
+                this.radiusX = 119 + Math.random() * 93.5;
+                this.radiusY = 42.5 + Math.random() * 51;
+                this.angle = Math.random() * Math.PI * 2;
+                this.tilt = (Math.random() - 0.5) * 0.6;
+
+                this.targetSpeed = (0.0022 + Math.random() * 0.0044) * (Math.random() > 0.5 ? 1 : -1);
+                this.speed = 0;
+
+                this.history = [];
+                this.targetSize = 1 + Math.random() * 1.2;
+                this.size = 0;
+                this.opacity = 0.25 + Math.random() * 0.45;
+                this.lineWidth = 0.8 + Math.random() * 0.6;
+
+                this.materializationRate = 0.012 + Math.random() * 0.018;
+
+                // Start position on orbit so there's no snap-in rush
+                const cx = Math.cos(this.angle) * this.radiusX;
+                const cz = Math.sin(this.angle) * this.radiusX;
+                const cy = Math.sin(this.angle * 0.5) * this.radiusY + cx * this.tilt;
+                this.x = cx; this.y = cy; this.z = cz;
+            }
+
+            update() {
+                this.size += (this.targetSize - this.size) * this.materializationRate;
+                this.speed += (this.targetSpeed - this.speed) * this.materializationRate;
+
+                this.angle += this.speed;
+
+                // Free 3D elliptical orbit with per-comet tilt and gentle noise
+                const noise = Math.sin(Date.now() * 0.0008 + this.radiusX) * 8;
+                const targetX = Math.cos(this.angle) * this.radiusX;
+                const targetZ = Math.sin(this.angle) * this.radiusX;
+                const targetY = Math.sin(this.angle * 0.5) * this.radiusY + targetX * this.tilt + noise;
+
+                // Lag towards target for fluid feel
+                this.x += (targetX - this.x) * 0.05;
+                this.y += (targetY - this.y) * 0.05;
+                this.z += (targetZ - this.z) * 0.05;
+
+                // Trail length scales with speed
+                const speedFactor = Math.abs(this.speed) / Math.abs(this.targetSpeed || 0.001);
+                this.maxHistory = Math.round(8 + speedFactor * 14);
+
+                if (this.size >= this.targetSize * 0.25) {
+                    this.history.push({ x: this.x, y: this.y, z: this.z });
+                    if (this.history.length > this.maxHistory) this.history.shift();
+                }
+            }
+
+            draw() {
+                const centerX = window.innerWidth / 2;
+                const centerY = window.innerHeight / 2;
+                const perspective = 800;
+
+                const ctx = this.z > 0 ? this.ctxBg : this.ctxFg;
+
+                const points = [...this.history, { x: this.x, y: this.y, z: this.z }];
+                if (points.length < 2) {
+                    const s = perspective / (perspective + this.z);
+                    ctx.beginPath();
+                    ctx.arc(centerX + this.x * s, centerY + this.y * s, this.lineWidth * s, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(5,5,5,${this.opacity})`;
+                    ctx.fill();
+                    return;
+                }
+
+                ctx.beginPath();
+                for (let i = 0; i < points.length; i++) {
+                    const p = points[i];
+                    const s = perspective / (perspective + p.z);
+                    const px = centerX + p.x * s;
+                    const py = centerY + p.y * s;
+                    if (i === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                }
+                ctx.strokeStyle = `rgba(5,5,5,${this.opacity})`;
+                ctx.lineWidth = this.lineWidth;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.stroke();
+            }
+        }
+
+        function initComets() {
+            const canvasBg = document.getElementById('canvas-bg');
+            const canvasFg = document.getElementById('canvas-fg');
+            const comets = [];
+            const cometCount = 12;
+
+            function resize() {
+                canvasBg.width = canvasFg.width = window.innerWidth;
+                canvasBg.height = canvasFg.height = window.innerHeight;
+            }
+
+            window.addEventListener('resize', resize);
+            resize();
+
+            for (let i = 0; i < cometCount; i++) {
+                comets.push(new Comet(canvasBg, canvasFg));
+            }
+
+            function animate() {
+                const ctxBg = canvasBg.getContext('2d');
+                const ctxFg = canvasFg.getContext('2d');
+                ctxBg.clearRect(0, 0, canvasBg.width, canvasBg.height);
+                ctxFg.clearRect(0, 0, canvasFg.width, canvasFg.height);
+
+                comets.forEach(comet => {
+                    comet.update();
+                    comet.draw();
+                });
+
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+        }
+
+        function initURLCleanup() {
+            // For file:// environment, we can't hide it on load reliably without breaking state
+            // But we can try to rewrite it if it's explicitly .html
+            if (window.location.protocol !== 'file:' && window.location.pathname.endsWith('.html')) {
+                const newPath = window.location.pathname.replace(/\.html$/, '');
+                window.history.replaceState(null, '', newPath + window.location.search + window.location.hash);
+            }
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
+            initURLCleanup();
             const elCenter = document.getElementById('scramble-text');
+            const elStatus = document.getElementById('scramble-status');
             const elMe = document.getElementById('scramble-me');
             const elBoston = document.getElementById('scramble-boston');
 
             const fxCenter = new TextScramble(elCenter);
+            const fxStatus = new TextScramble(elStatus);
             const fxMe = new TextScramble(elMe);
             const fxBoston = new TextScramble(elBoston);
 
             // Hide the text initially or set to blank before scramble
             elCenter.innerText = '';
+            elStatus.innerText = '';
             elMe.innerText = '';
             elBoston.innerText = '';
 
             // Scramble to target string over the same duration as corners
             setTimeout(() => {
-                fxCenter.setText('JIALIN CHEN');
+                fxCenter.setText('JIALIN CHEN').then(() => {
+                    setTimeout(() => {
+                        initComets();
+                    }, 200);
+                });
+                fxStatus.setText('[UNDER CONSTRUCTION]');
                 fxMe.setText('HARVARD');
                 fxBoston.setText('BOSTON');
             }, 100);
+
+            // Exit animation trigger
+            const links = document.querySelectorAll('main a, nav a');
+            links.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetUrl = link.href;
+
+                    document.querySelectorAll('.corner').forEach(corner => {
+                        corner.classList.add('exit');
+                    });
+
+                    document.querySelector('main').classList.add('exit-main');
+                    document.querySelector('nav').classList.add('exit-nav');
+
+                    setTimeout(() => {
+                        window.location.href = targetUrl;
+                    }, 800);
+                });
+            });
         });
     </script>
 </body>

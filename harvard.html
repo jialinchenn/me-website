@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harvard</title>
+    <style>
+        :root {
+            --bg: #fff;
+            --text-main: #050505;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Go Back Button */
+        .back-btn {
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            font-family: monospace;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: var(--text-main);
+            font-size: 14px;
+            letter-spacing: 0.1em;
+            z-index: 50;
+            padding: 8px 16px;
+            border: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+
+        .back-btn:hover {
+            border-color: var(--text-main);
+        }
+
+        /* Container for the canvas */
+        .image-container {
+            position: relative;
+            width: 80vw;
+            max-width: 600px;
+            aspect-ratio: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            max-width: 100%;
+            max-height: 80vh;
+            display: block;
+            opacity: 0;
+            transition: opacity 0.1s;
+        }
+    </style>
+</head>
+
+<body>
+
+    <a href="index.html" class="back-btn">
+        < BACK</a>
+
+            <div class="image-container">
+                <canvas id="scramble-canvas"></canvas>
+            </div>
+
+            <img id="source-image" src="harvard.jpg" alt="Harvard" style="display: none;" crossorigin="anonymous">
+
+            <script>
+                class ImageScramble {
+                    constructor(canvas, imageElement) {
+                        this.canvas = canvas;
+                        this.ctx = canvas.getContext('2d');
+                        this.image = imageElement;
+                        this.cols = 32;
+                        this.rows = 32;
+                        this.scrambleColors = ['#f0f0f0', '#e0e0e0', '#d0d0d0', '#bfbfbf', '#050505'];
+                        this.update = this.update.bind(this);
+
+                        if (this.image.complete) {
+                            this.init();
+                        } else {
+                            this.image.onload = () => this.init();
+                        }
+                    }
+
+                    init() {
+                        this.canvas.width = this.image.naturalWidth;
+                        this.canvas.height = this.image.naturalHeight;
+                        this.canvas.style.opacity = 0;
+                        this.totalDuration = 1300;
+                        this.blockWidth = this.canvas.width / this.cols;
+                        this.blockHeight = this.canvas.height / this.rows;
+                        this.blocks = [];
+
+                        for (let y = 0; y < this.rows; y++) {
+                            for (let x = 0; x < this.cols; x++) {
+                                const start = Math.floor(Math.random() * (this.totalDuration / 2));
+                                const end = start + Math.floor(Math.random() * (this.totalDuration / 2)) + (this.totalDuration / 2);
+                                this.blocks.push({ x, y, start, end, isResolved: false });
+                            }
+                        }
+
+                        setTimeout(() => {
+                            this.startTime = Date.now();
+                            this.update();
+                        }, 100);
+                    }
+
+                    update() {
+                        let completeCount = 0;
+                        const timePassed = Date.now() - this.startTime;
+                        const progress = Math.min(timePassed / this.totalDuration, 1);
+                        this.canvas.style.opacity = progress;
+
+                        this.ctx.fillStyle = '#fff';
+                        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+                        for (let i = 0; i < this.blocks.length; i++) {
+                            const block = this.blocks[i];
+                            const dx = block.x * this.blockWidth;
+                            const dy = block.y * this.blockHeight;
+
+                            if (timePassed >= block.end) {
+                                block.isResolved = true;
+                                completeCount++;
+                                this.ctx.drawImage(this.image, dx, dy, this.blockWidth, this.blockHeight, dx, dy, this.blockWidth, this.blockHeight);
+                            } else if (timePassed >= block.start) {
+                                this.ctx.fillStyle = this.scrambleColors[Math.floor(Math.random() * this.scrambleColors.length)];
+                                this.ctx.fillRect(dx, dy, this.blockWidth, this.blockHeight);
+                            } else {
+                                if (Math.random() < 0.05) {
+                                    this.ctx.fillStyle = '#f0f0f0';
+                                    this.ctx.fillRect(dx, dy, this.blockWidth, this.blockHeight);
+                                }
+                            }
+                        }
+
+                        if (completeCount === this.blocks.length) {
+                            this.ctx.drawImage(this.image, 0, 0, this.canvas.width, this.canvas.height);
+                        } else {
+                            requestAnimationFrame(this.update);
+                        }
+                    }
+                }
+
+                function initURLCleanup() {
+                    if (window.location.protocol !== 'file:' && window.location.pathname.endsWith('.html')) {
+                        const newPath = window.location.pathname.replace(/\.html$/, '');
+                        window.history.replaceState(null, '', newPath + window.location.search + window.location.hash);
+                    }
+                }
+
+                document.addEventListener("DOMContentLoaded", () => {
+                    initURLCleanup();
+                    const canvasEl = document.getElementById('scramble-canvas');
+                    const imgEl = document.getElementById('source-image');
+                    new ImageScramble(canvasEl, imgEl);
+                });
+            </script>
+</body>
+
+</html>

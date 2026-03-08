@@ -397,11 +397,14 @@
                 this.x = cx; this.y = cy; this.z = cz;
             }
 
-            update() {
-                this.size += (this.targetSize - this.size) * this.materializationRate;
-                this.speed += (this.targetSpeed - this.speed) * this.materializationRate;
+            update(dt) {
+                // dt is normalized to 16.67ms (60fps)
+                const step = dt / 16.67;
 
-                this.angle += this.speed;
+                this.size += (this.targetSize - this.size) * this.materializationRate * step;
+                this.speed += (this.targetSpeed - this.speed) * this.materializationRate * step;
+
+                this.angle += this.speed * step;
 
                 // Free 3D elliptical orbit with per-comet tilt and gentle noise
                 const noise = Math.sin(Date.now() * 0.0008 + this.radiusX) * 8;
@@ -410,9 +413,9 @@
                 const targetY = Math.sin(this.angle * 0.5) * this.radiusY + targetX * this.tilt + noise;
 
                 // Lag towards target for fluid feel
-                this.x += (targetX - this.x) * 0.05;
-                this.y += (targetY - this.y) * 0.05;
-                this.z += (targetZ - this.z) * 0.05;
+                this.x += (targetX - this.x) * 0.05 * step;
+                this.y += (targetY - this.y) * 0.05 * step;
+                this.z += (targetZ - this.z) * 0.05 * step;
 
                 // Trail length scales with speed
                 const speedFactor = Math.abs(this.speed) / Math.abs(this.targetSpeed || 0.001);
@@ -476,21 +479,26 @@
                 comets.push(new Comet(canvasBg, canvasFg));
             }
 
-            function animate() {
+            let lastTimestamp = 0;
+            function animate(timestamp) {
+                if (!lastTimestamp) lastTimestamp = timestamp;
+                const dt = timestamp - lastTimestamp;
+                lastTimestamp = timestamp;
+
                 const ctxBg = canvasBg.getContext('2d');
                 const ctxFg = canvasFg.getContext('2d');
                 ctxBg.clearRect(0, 0, canvasBg.width, canvasBg.height);
                 ctxFg.clearRect(0, 0, canvasFg.width, canvasFg.height);
 
                 comets.forEach(comet => {
-                    comet.update();
+                    comet.update(dt);
                     comet.draw();
                 });
 
                 requestAnimationFrame(animate);
             }
 
-            animate();
+            requestAnimationFrame(animate);
         }
 
         function initURLCleanup() {

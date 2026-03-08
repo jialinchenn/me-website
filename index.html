@@ -244,22 +244,6 @@
             font-size: 8px;
         }
 
-        canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-
-        #canvas-bg {
-            z-index: 5;
-        }
-
-        #canvas-fg {
-            z-index: 15;
-        }
     </style>
 </head>
 
@@ -271,8 +255,6 @@
     <div class="corner corner-bl"></div>
     <div class="corner corner-br"></div>
 
-    <!-- Background Canvas (behind text) -->
-    <canvas id="canvas-bg"></canvas>
 
     <!-- Main Content -->
     <main>
@@ -282,8 +264,6 @@
         </a>
     </main>
 
-    <!-- Foreground Canvas (in front of text) -->
-    <canvas id="canvas-fg"></canvas>
 
     <!-- Bottom Nav -->
     <nav>
@@ -363,143 +343,6 @@
             }
         }
 
-        class Comet {
-            constructor(canvasBg, canvasFg) {
-                this.canvasBg = canvasBg;
-                this.canvasFg = canvasFg;
-                this.ctxBg = canvasBg.getContext('2d');
-                this.ctxFg = canvasFg.getContext('2d');
-                this.reset();
-            }
-
-            reset() {
-                // Each comet gets its own elliptical orbit with random tilt
-                this.radiusX = 119 + Math.random() * 93.5;
-                this.radiusY = 42.5 + Math.random() * 51;
-                this.angle = Math.random() * Math.PI * 2;
-                this.tilt = (Math.random() - 0.5) * 0.6;
-
-                this.targetSpeed = (0.0022 + Math.random() * 0.0044) * (Math.random() > 0.5 ? 1 : -1);
-                this.speed = 0;
-
-                this.history = [];
-                this.targetSize = 1 + Math.random() * 1.2;
-                this.size = 0;
-                this.opacity = 0.25 + Math.random() * 0.45;
-                this.lineWidth = 0.8 + Math.random() * 0.6;
-
-                this.materializationRate = 0.012 + Math.random() * 0.018;
-
-                // Start position on orbit so there's no snap-in rush
-                const cx = Math.cos(this.angle) * this.radiusX;
-                const cz = Math.sin(this.angle) * this.radiusX;
-                const cy = Math.sin(this.angle * 0.5) * this.radiusY + cx * this.tilt;
-                this.x = cx; this.y = cy; this.z = cz;
-            }
-
-            update(dt) {
-                // dt is normalized to 16.67ms (60fps)
-                const step = dt / 16.67;
-
-                this.size += (this.targetSize - this.size) * this.materializationRate * step;
-                this.speed += (this.targetSpeed - this.speed) * this.materializationRate * step;
-
-                this.angle += this.speed * step;
-
-                // Free 3D elliptical orbit with per-comet tilt and gentle noise
-                const noise = Math.sin(Date.now() * 0.0008 + this.radiusX) * 8;
-                const targetX = Math.cos(this.angle) * this.radiusX;
-                const targetZ = Math.sin(this.angle) * this.radiusX;
-                const targetY = Math.sin(this.angle * 0.5) * this.radiusY + targetX * this.tilt + noise;
-
-                // Lag towards target for fluid feel
-                this.x += (targetX - this.x) * 0.05 * step;
-                this.y += (targetY - this.y) * 0.05 * step;
-                this.z += (targetZ - this.z) * 0.05 * step;
-
-                // Trail length scales with speed
-                const speedFactor = Math.abs(this.speed) / Math.abs(this.targetSpeed || 0.001);
-                this.maxHistory = Math.round(8 + speedFactor * 14);
-
-                if (this.size >= this.targetSize * 0.25) {
-                    this.history.push({ x: this.x, y: this.y, z: this.z });
-                    if (this.history.length > this.maxHistory) this.history.shift();
-                }
-            }
-
-            draw() {
-                const centerX = window.innerWidth / 2;
-                const centerY = window.innerHeight / 2;
-                const perspective = 800;
-
-                const ctx = this.z > 0 ? this.ctxBg : this.ctxFg;
-
-                const points = [...this.history, { x: this.x, y: this.y, z: this.z }];
-                if (points.length < 2) {
-                    const s = perspective / (perspective + this.z);
-                    ctx.beginPath();
-                    ctx.arc(centerX + this.x * s, centerY + this.y * s, this.lineWidth * s, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(5,5,5,${this.opacity})`;
-                    ctx.fill();
-                    return;
-                }
-
-                ctx.beginPath();
-                for (let i = 0; i < points.length; i++) {
-                    const p = points[i];
-                    const s = perspective / (perspective + p.z);
-                    const px = centerX + p.x * s;
-                    const py = centerY + p.y * s;
-                    if (i === 0) ctx.moveTo(px, py);
-                    else ctx.lineTo(px, py);
-                }
-                ctx.strokeStyle = `rgba(5,5,5,${this.opacity})`;
-                ctx.lineWidth = this.lineWidth;
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
-                ctx.stroke();
-            }
-        }
-
-        function initComets() {
-            const canvasBg = document.getElementById('canvas-bg');
-            const canvasFg = document.getElementById('canvas-fg');
-            const comets = [];
-            const cometCount = 12;
-
-            function resize() {
-                canvasBg.width = canvasFg.width = window.innerWidth;
-                canvasBg.height = canvasFg.height = window.innerHeight;
-            }
-
-            window.addEventListener('resize', resize);
-            resize();
-
-            for (let i = 0; i < cometCount; i++) {
-                comets.push(new Comet(canvasBg, canvasFg));
-            }
-
-            let lastTimestamp = 0;
-            function animate(timestamp) {
-                if (!lastTimestamp) lastTimestamp = timestamp;
-                const dt = timestamp - lastTimestamp;
-                lastTimestamp = timestamp;
-
-                const ctxBg = canvasBg.getContext('2d');
-                const ctxFg = canvasFg.getContext('2d');
-                ctxBg.clearRect(0, 0, canvasBg.width, canvasBg.height);
-                ctxFg.clearRect(0, 0, canvasFg.width, canvasFg.height);
-
-                comets.forEach(comet => {
-                    comet.update(dt);
-                    comet.draw();
-                });
-
-                requestAnimationFrame(animate);
-            }
-
-            requestAnimationFrame(animate);
-        }
 
         function initURLCleanup() {
             // For file:// environment, we can't hide it on load reliably without breaking state
@@ -530,11 +373,7 @@
 
             // Scramble to target string over the same duration as corners
             setTimeout(() => {
-                fxCenter.setText('JIALIN CHEN').then(() => {
-                    setTimeout(() => {
-                        initComets();
-                    }, 200);
-                });
+                fxCenter.setText('JIALIN CHEN');
                 fxStatus.setText('[UNDER CONSTRUCTION]');
                 fxMe.setText('HARVARD');
                 fxBoston.setText('BOSTON');

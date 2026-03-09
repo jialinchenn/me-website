@@ -346,11 +346,12 @@
 
 
         function initURLCleanup() {
-            // For file:// environment, we can't hide it on load reliably without breaking state
-            // But we can try to rewrite it if it's explicitly .html
-            if (window.location.protocol !== 'file:' && window.location.pathname.endsWith('.html')) {
-                const newPath = window.location.pathname.replace(/\.html$/, '');
-                window.history.replaceState(null, '', newPath + window.location.search + window.location.hash);
+            if (window.location.protocol !== 'file:') {
+                const path = window.location.pathname;
+                if (path.endsWith('.html') || path.endsWith('/index')) {
+                    const newPath = path.replace(/\.html$/, '').replace(/\/index$/, '') || '/';
+                    window.history.replaceState(null, '', newPath + window.location.search + window.location.hash);
+                }
             }
         }
 

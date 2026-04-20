@@ -20,6 +20,41 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            cursor: none;
+        }
+
+        #cursor-cross {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 16px;
+            height: 16px;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-8px, -8px);
+        }
+
+        #cursor-cross::before,
+        #cursor-cross::after {
+            content: '';
+            position: absolute;
+            background: var(--text-main);
+        }
+
+        #cursor-cross::before {
+            width: 100%;
+            height: 1px;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+        }
+
+        #cursor-cross::after {
+            width: 1px;
+            height: 100%;
+            left: 50%;
+            top: 0;
+            transform: translateX(-50%);
         }
 
         body {
@@ -273,6 +308,16 @@
         </div>
         <div class="nav-right" id="scramble-boston">BOSTON</div>
     </nav>
+
+    <div id="cursor-cross"></div>
+
+    <script>
+        document.addEventListener('mousemove', (e) => {
+            const c = document.getElementById('cursor-cross');
+            c.style.left = e.clientX + 'px';
+            c.style.top = e.clientY + 'px';
+        });
+    </script>
 
     <script>
         class TextScramble {

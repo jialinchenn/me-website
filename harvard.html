@@ -15,41 +15,6 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            cursor: none;
-        }
-
-        #cursor-cross {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 16px;
-            height: 16px;
-            pointer-events: none;
-            z-index: 9999;
-            transform: translate(-8px, -8px);
-        }
-
-        #cursor-cross::before,
-        #cursor-cross::after {
-            content: '';
-            position: absolute;
-            background: var(--text-main);
-        }
-
-        #cursor-cross::before {
-            width: 100%;
-            height: 2px;
-            top: 50%;
-            left: 0;
-            transform: translateY(-50%);
-        }
-
-        #cursor-cross::after {
-            width: 2px;
-            height: 100%;
-            left: 50%;
-            top: 0;
-            transform: translateX(-50%);
         }
 
         body {
@@ -84,139 +49,32 @@
             border-color: var(--text-main);
         }
 
-        /* Container for the canvas */
-        .image-container {
-            position: relative;
-            width: 40vw;
-            max-width: 300px;
-            aspect-ratio: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        canvas {
-            max-width: 100%;
-            max-height: 80vh;
+        .harvard-img {
             display: block;
-            opacity: 0;
-            transition: opacity 0.1s;
+            max-width: 40vw;
+            max-height: 80vh;
         }
     </style>
 </head>
 
 <body>
 
-    <a href="index.html" class="back-btn">
-        < BACK</a>
+    <a href="index.html" class="back-btn">< BACK</a>
 
-            <div class="image-container">
-                <canvas id="scramble-canvas"></canvas>
-            </div>
+    <img src="harvard.jpeg" alt="Harvard" class="harvard-img">
 
-            <img id="source-image" src="harvard.jpeg" alt="Harvard" style="display: none;" crossorigin="anonymous">
-
-    <div id="cursor-cross"></div>
     <script>
-        document.addEventListener('mousemove', (e) => {
-            const c = document.getElementById('cursor-cross');
-            c.style.left = e.clientX + 'px';
-            c.style.top = e.clientY + 'px';
-        });
+        /* ── URL cleanup ──────────────────────────────────────── */
+        (function initURLCleanup() {
+            if (window.location.protocol !== 'file:' &&
+                window.location.pathname.endsWith('.html')) {
+                const newPath = window.location.pathname.replace(/\.html$/, '');
+                window.history.replaceState(null, '', newPath +
+                    window.location.search + window.location.hash);
+            }
+        })();
     </script>
 
-            <script>
-                class ImageScramble {
-                    constructor(canvas, imageElement) {
-                        this.canvas = canvas;
-                        this.ctx = canvas.getContext('2d');
-                        this.image = imageElement;
-                        this.cols = 96;
-                        this.rows = 96;
-                        this.scrambleColors = ['#f0f0f0', '#e0e0e0', '#d0d0d0', '#bfbfbf', '#050505'];
-                        this.update = this.update.bind(this);
-
-                        if (this.image.complete) {
-                            this.init();
-                        } else {
-                            this.image.onload = () => this.init();
-                        }
-                    }
-
-                    init() {
-                        this.canvas.width = this.image.naturalWidth;
-                        this.canvas.height = this.image.naturalHeight;
-                        this.canvas.style.opacity = 0;
-                        this.totalDuration = 1300;
-                        this.blockWidth = this.canvas.width / this.cols;
-                        this.blockHeight = this.canvas.height / this.rows;
-                        this.blocks = [];
-
-                        for (let y = 0; y < this.rows; y++) {
-                            for (let x = 0; x < this.cols; x++) {
-                                const start = Math.floor(Math.random() * (this.totalDuration / 2));
-                                const end = start + Math.floor(Math.random() * (this.totalDuration / 2)) + (this.totalDuration / 2);
-                                this.blocks.push({ x, y, start, end, isResolved: false });
-                            }
-                        }
-
-                        setTimeout(() => {
-                            this.startTime = Date.now();
-                            this.update();
-                        }, 100);
-                    }
-
-                    update() {
-                        let completeCount = 0;
-                        const timePassed = Date.now() - this.startTime;
-                        const progress = Math.min(timePassed / this.totalDuration, 1);
-                        this.canvas.style.opacity = progress;
-
-                        this.ctx.fillStyle = '#fff';
-                        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-                        for (let i = 0; i < this.blocks.length; i++) {
-                            const block = this.blocks[i];
-                            const dx = block.x * this.blockWidth;
-                            const dy = block.y * this.blockHeight;
-
-                            if (timePassed >= block.end) {
-                                block.isResolved = true;
-                                completeCount++;
-                                this.ctx.drawImage(this.image, dx, dy, this.blockWidth, this.blockHeight, dx, dy, this.blockWidth, this.blockHeight);
-                            } else if (timePassed >= block.start) {
-                                this.ctx.fillStyle = this.scrambleColors[Math.floor(Math.random() * this.scrambleColors.length)];
-                                this.ctx.fillRect(dx, dy, this.blockWidth, this.blockHeight);
-                            } else {
-                                if (Math.random() < 0.05) {
-                                    this.ctx.fillStyle = '#f0f0f0';
-                                    this.ctx.fillRect(dx, dy, this.blockWidth, this.blockHeight);
-                                }
-                            }
-                        }
-
-                        if (completeCount === this.blocks.length) {
-                            this.ctx.drawImage(this.image, 0, 0, this.canvas.width, this.canvas.height);
-                        } else {
-                            requestAnimationFrame(this.update);
-                        }
-                    }
-                }
-
-                function initURLCleanup() {
-                    if (window.location.protocol !== 'file:' && window.location.pathname.endsWith('.html')) {
-                        const newPath = window.location.pathname.replace(/\.html$/, '');
-                        window.history.replaceState(null, '', newPath + window.location.search + window.location.hash);
-                    }
-                }
-
-                document.addEventListener("DOMContentLoaded", () => {
-                    initURLCleanup();
-                    const canvasEl = document.getElementById('scramble-canvas');
-                    const imgEl = document.getElementById('source-image');
-                    new ImageScramble(canvasEl, imgEl);
-                });
-            </script>
 </body>
 
 </html>

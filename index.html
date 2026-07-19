@@ -185,7 +185,7 @@
         }
 
         .hero-mark {
-            text-transform: uppercase;
+            text-transform: lowercase;
             font-weight: 400;
             /* slightly thinner to match image feel */
             color: var(--text-main);
@@ -226,7 +226,7 @@
 
         .nav-left,
         .nav-right {
-            text-transform: uppercase;
+            text-transform: lowercase;
             font-size: 10px;
             /* very small font */
             letter-spacing: 0.12em;
@@ -263,17 +263,16 @@
     <!-- Main Content -->
     <main>
         <a href="me.html" style="color: inherit; text-decoration: none; cursor: pointer;">
-            <div class="hero-mark" id="scramble-text">JIALIN CHEN</div>
-            <div class="status-mark" id="scramble-status">[UNDER CONSTRUCTION]</div>
+            <div class="hero-mark" id="scramble-text">jialin chen</div>
         </a>
     </main>
 
     <!-- Bottom Nav -->
     <nav>
         <div class="nav-left">
-            <a href="harvard.html" style="color: inherit; text-decoration: none;"><span id="scramble-me">HARVARD</span></a>
+            <a href="harvard.html" style="color: inherit; text-decoration: none;"><span id="scramble-me">harvard</span></a>
         </div>
-        <div class="nav-right" id="scramble-boston">BOSTON</div>
+        <div class="nav-right" id="scramble-boston">boston</div>
     </nav>
 
 
@@ -359,30 +358,31 @@
             }
         }
 
+        // On back/forward bfcache restore, re-run instead of showing the stale (exited) snapshot.
+        window.addEventListener('pageshow', (e) => {
+            if (e.persisted) window.location.reload();
+        });
+
         document.addEventListener("DOMContentLoaded", () => {
             initURLCleanup();
             const elCenter = document.getElementById('scramble-text');
-            const elStatus = document.getElementById('scramble-status');
             const elMe = document.getElementById('scramble-me');
             const elBoston = document.getElementById('scramble-boston');
 
             const fxCenter = new TextScramble(elCenter);
-            const fxStatus = new TextScramble(elStatus);
             const fxMe = new TextScramble(elMe);
             const fxBoston = new TextScramble(elBoston);
 
             // Hide the text initially or set to blank before scramble
             elCenter.innerText = '';
-            elStatus.innerText = '';
             elMe.innerText = '';
             elBoston.innerText = '';
 
             // Scramble to target string over the same duration as corners
             setTimeout(() => {
-                fxCenter.setText('JIALIN CHEN');
-                fxStatus.setText('[UNDER CONSTRUCTION]');
-                fxMe.setText('HARVARD');
-                fxBoston.setText('BOSTON');
+                fxCenter.setText('jialin chen');
+                fxMe.setText('harvard');
+                fxBoston.setText('boston');
             }, 100);
 
             // Exit animation trigger

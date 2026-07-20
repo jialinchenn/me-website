@@ -152,14 +152,16 @@
             z-index: 60;
         }
 
-        /* invisible bridge over the gap so cursor can travel text -> card without losing hover */
-        .card::before {
+        /* invisible bridge over the gap so cursor can travel text -> card without
+           losing hover; only as wide as the trigger text and only while hovered,
+           so it never blocks a neighboring trigger */
+        .hovercard:hover::after {
             content: '';
             position: absolute;
             left: 0;
             right: 0;
-            bottom: -18px;
-            height: 18px;
+            bottom: 100%;
+            height: 22px;
         }
 
         .hovercard:hover .card {
@@ -215,13 +217,24 @@
             font-weight: 400;
             font-size: 14px;
             line-height: 1.5;
-            color: var(--text-dim);
+            color: #3d3d3d;
         }
 
         .name-trigger {
             font-family: 'Caveat', cursive;
             font-weight: 700;
             font-size: 1.5em;
+            /* keep the bigger glyphs from inflating the first line's box */
+            line-height: 1;
+        }
+
+        /* harvard card tilts opposite to florence */
+        .card-alt {
+            transform: translateX(-50%) rotate(-4deg) translateY(8px);
+        }
+
+        .hovercard:hover .card-alt {
+            transform: translateX(-50%) rotate(-4deg) translateY(0);
         }
 
         .harvard-trigger {
@@ -229,6 +242,11 @@
             cursor: default;
             text-decoration: underline dotted;
             text-underline-offset: 3px;
+        }
+
+        a.harvard-trigger {
+            color: inherit;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -248,10 +266,12 @@
             <img id="source-image" src="photo.jpg" alt="Jialin Chen" style="display: none;" crossorigin="anonymous">
 
             <div class="bio">
-                <p>I'm <span class="name-trigger">Jialin Chen</span>. I'm currently on leave from <span
-                        class="hovercard"><span class="harvard-trigger">Harvard</span><span class="card" role="tooltip">
+                <p>hey there! my name is <span class="name-trigger">jialin</span>. i'm currently a rising junior at
+                    <span class="hovercard"><span class="harvard-trigger">harvard</span><span class="card card-alt"
+                            role="tooltip">
                             <span class="card-body">where i studied gov + psych</span>
-                        </span></span> building <span class="hovercard"><span class="harvard-trigger">florence.care</span><a class="card card-link" href="https://florence.care" target="_blank"
+                        </span></span> building <span class="hovercard"><span
+                        class="harvard-trigger">florence.care</span><a class="card card-link" href="https://florence.care" target="_blank"
                             rel="noopener" role="tooltip">
                             <span class="card-head">
                                 <svg class="card-logo" width="100" height="100" viewBox="0 0 100 100" fill="none"
@@ -269,11 +289,57 @@
                                 <span class="card-title">florence.care</span>
                             </span>
                             <span class="card-body">the future of disability care</span>
-                        </a></span>. i spend my time chasing after the intersection of technology and
+                        </a></span>. outside of class, i spend my time pursuing the intersection of technology and
                     humanity.</p>
 
-                <p>i'm based between boston (home) and wherever the next sales motion is.
-                    email me at <a class="link"
+                <p>check out where i store my thoughts: my <span class="hovercard"><a class="harvard-trigger"
+                            href="https://www.linkedin.com/in/jialinchenn/" target="_blank"
+                            rel="noopener">linkedin</a><a class="card card-link"
+                            href="https://www.linkedin.com/in/jialinchenn/" target="_blank" rel="noopener"
+                            role="tooltip">
+                            <span class="card-head">
+                                <svg class="card-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"
+                                    aria-hidden="true">
+                                    <circle cx="50" cy="50" r="50" fill="#0A66C2" />
+                                    <text x="50" y="68" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif"
+                                        font-weight="bold" font-size="52">in</text>
+                                </svg>
+                                <span class="card-title">linkedin</span>
+                            </span>
+                            <span class="card-body">where i build in public</span>
+                        </a></span>, <span class="hovercard"><a class="harvard-trigger"
+                            href="https://www.instagram.com/jialin.chenn/" target="_blank"
+                            rel="noopener">instagram</a><a class="card card-link card-alt"
+                            href="https://www.instagram.com/jialin.chenn/" target="_blank" rel="noopener"
+                            role="tooltip">
+                            <span class="card-head">
+                                <svg class="card-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"
+                                    aria-hidden="true">
+                                    <defs>
+                                        <linearGradient id="ig-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+                                            <stop offset="0%" stop-color="#FED576" />
+                                            <stop offset="30%" stop-color="#F47133" />
+                                            <stop offset="62%" stop-color="#BC3081" />
+                                            <stop offset="100%" stop-color="#4C63D2" />
+                                        </linearGradient>
+                                    </defs>
+                                    <circle cx="50" cy="50" r="50" fill="url(#ig-grad)" />
+                                    <rect x="27" y="27" width="46" height="46" rx="14" fill="none" stroke="#fff"
+                                        stroke-width="6" />
+                                    <circle cx="50" cy="50" r="11" fill="none" stroke="#fff" stroke-width="6" />
+                                    <circle cx="64.5" cy="35.5" r="4.5" fill="#fff" />
+                                </svg>
+                                <span class="card-title">instagram</span>
+                            </span>
+                            <span class="card-body">where i record my thoughts</span>
+                        </a></span>, and <span class="hovercard"><a class="harvard-trigger"
+                            href="memories.html">memory vault</a><a class="card card-link" href="memories.html"
+                            role="tooltip">
+                            <span class="card-body">where i store my most prized moments</span>
+                        </a></span>.</p>
+
+                <p>i'm based between boston (home) and wherever my next sales motion is.
+                    email me at <a class="harvard-trigger"
                         href="mailto:jialinchen@college.harvard.edu">jialinchen@college.harvard.edu</a>.
                 </p>
             </div>
@@ -286,8 +352,8 @@
                 this.canvas = canvas;
                 this.ctx = canvas.getContext('2d');
                 this.image = imageElement;
-                this.cols = 32;
-                this.rows = 32;
+                this.cols = 64;
+                this.rows = 64;
                 this.scrambleColors = ['#f0f0f0', '#e0e0e0', '#d0d0d0', '#bfbfbf', '#050505'];
                 this.update = this.update.bind(this);
 

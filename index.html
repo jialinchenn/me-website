@@ -7,7 +7,7 @@
     <title>Jialin Chen</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg: #fff;
@@ -185,11 +185,10 @@
         }
 
         .hero-mark {
-            text-transform: lowercase;
-            font-weight: 400;
-            /* slightly thinner to match image feel */
+            text-transform: uppercase;
+            font-weight: 600;
             color: var(--text-main);
-            letter-spacing: 0.15em;
+            letter-spacing: 0.135em;
             font-size: 24px;
         }
 
@@ -226,7 +225,7 @@
 
         .nav-left,
         .nav-right {
-            text-transform: lowercase;
+            text-transform: uppercase;
             font-size: 10px;
             /* very small font */
             letter-spacing: 0.12em;
@@ -270,9 +269,10 @@
     <!-- Bottom Nav -->
     <nav>
         <div class="nav-left">
-            <a href="harvard.html" style="color: inherit; text-decoration: none;"><span id="scramble-me">harvard</span></a>
+            <span id="scramble-me">harvard</span>
         </div>
-        <div class="nav-right" id="scramble-boston">boston</div>
+        <div class="nav-right"><a href="memories.html" style="color: inherit; text-decoration: none;"><span
+                    id="scramble-boston">memories</span></a></div>
     </nav>
 
 
@@ -382,7 +382,7 @@
             setTimeout(() => {
                 fxCenter.setText('jialin chen');
                 fxMe.setText('harvard');
-                fxBoston.setText('boston');
+                fxBoston.setText('memories');
             }, 100);
 
             // Exit animation trigger

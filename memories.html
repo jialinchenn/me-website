@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jialin Chen</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fff;
+            --text-main: #050505;
+            --text-dim: #6b6b6b;
+            --gap: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Raleway', sans-serif;
+            min-height: 100vh;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            font-family: monospace;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: var(--text-main);
+            font-size: 14px;
+            letter-spacing: 0.1em;
+            z-index: 50;
+            padding: 8px 16px;
+            border: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+
+        .back-btn:hover {
+            border-color: var(--text-main);
+        }
+
+        .gallery {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 120px 40px 80px;
+            columns: 4;
+            column-gap: var(--gap);
+        }
+
+        .gallery img {
+            display: block;
+            width: 100%;
+            height: auto;
+            margin-bottom: var(--gap);
+            break-inside: avoid;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .gallery img.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 1100px) {
+            .gallery {
+                columns: 3;
+            }
+        }
+
+        @media (max-width: 800px) {
+            .gallery {
+                columns: 2;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .gallery {
+                columns: 1;
+            }
+        }
+
+        .more {
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 13px;
+            letter-spacing: 0.08em;
+            padding-bottom: 60px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <a href="index.html" class="back-btn">&lt; BACK</a>
+
+    <div class="gallery" id="gallery"></div>
+
+    <p class="more">more to come...</p>
+
+    <script>
+        function initURLCleanup() {
+            if (window.location.protocol !== 'file:' && window.location.pathname.endsWith('.html')) {
+                const newPath = window.location.pathname.replace(/\.html$/, '');
+                window.history.replaceState(null, '', newPath + window.location.search + window.location.hash);
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            initURLCleanup();
+
+            let photos = [];
+            try {
+                photos = await (await fetch('photography/manifest.json')).json();
+            } catch (e) { /* no manifest yet — empty gallery */ }
+
+            // Fisher-Yates shuffle for randomized order each visit
+            const shuffled = [...photos];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+
+            const gallery = document.getElementById('gallery');
+            // reveal only once the image is both on-screen and actually loaded,
+            // so the rise+fade animates real pixels, not an empty box
+            const reveal = (img) => {
+                if (img.complete && img.naturalWidth) {
+                    img.classList.add('visible');
+                } else {
+                    img.addEventListener('load', () => img.classList.add('visible'), { once: true });
+                }
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        reveal(entry.target);
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            shuffled.forEach((p) => {
+                const img = document.createElement('img');
+                img.src = 'photography/' + p.n;
+                // intrinsic dimensions reserve layout space before load,
+                // so below-fold images stay below the fold and reveal on scroll
+                img.width = p.w;
+                img.height = p.h;
+                img.alt = '';
+                img.loading = 'lazy';
+                gallery.appendChild(img);
+                observer.observe(img);
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -198,13 +198,20 @@
             color: var(--text-dim);
             letter-spacing: 0.12em;
             font-size: 10px;
-            margin-top: 12px;
-            opacity: 0.8;
-            transition: opacity 0.3s ease;
+            margin-top: 8px;
+            animation: statusPulse 2.6s ease-in-out infinite;
         }
 
-        .status-mark:hover {
-            opacity: 1;
+        @keyframes statusPulse {
+
+            0%,
+            100% {
+                opacity: 0.75;
+            }
+
+            50% {
+                opacity: 0.15;
+            }
         }
 
         nav {
@@ -263,6 +270,7 @@
     <main>
         <a href="me.html" style="color: inherit; text-decoration: none; cursor: pointer;">
             <div class="hero-mark" id="scramble-text">jialin chen</div>
+            <div class="status-mark" id="scramble-status">click me!</div>
         </a>
     </main>
 
@@ -366,21 +374,25 @@
         document.addEventListener("DOMContentLoaded", () => {
             initURLCleanup();
             const elCenter = document.getElementById('scramble-text');
+            const elStatus = document.getElementById('scramble-status');
             const elMe = document.getElementById('scramble-me');
             const elBoston = document.getElementById('scramble-boston');
 
             const fxCenter = new TextScramble(elCenter);
+            const fxStatus = new TextScramble(elStatus);
             const fxMe = new TextScramble(elMe);
             const fxBoston = new TextScramble(elBoston);
 
             // Hide the text initially or set to blank before scramble
             elCenter.innerText = '';
+            elStatus.innerText = '';
             elMe.innerText = '';
             elBoston.innerText = '';
 
             // Scramble to target string over the same duration as corners
             setTimeout(() => {
                 fxCenter.setText('jialin chen');
+                fxStatus.setText('click me!');
                 fxMe.setText('harvard');
                 fxBoston.setText('memories');
             }, 100);

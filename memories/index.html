@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jialin Chen</title>
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600&display=swap" rel="stylesheet">
@@ -103,7 +104,7 @@
 
 <body>
 
-    <a href="index.html" class="back-btn">&lt; BACK</a>
+    <a href="../" class="back-btn">&lt; BACK</a>
 
     <div class="gallery" id="gallery"></div>
 
@@ -122,7 +123,7 @@
 
             let photos = [];
             try {
-                photos = await (await fetch('photography/manifest.json')).json();
+                photos = await (await fetch('../photography/manifest.json')).json();
             } catch (e) { /* no manifest yet — empty gallery */ }
 
             // Fisher-Yates shuffle for randomized order each visit
@@ -154,7 +155,7 @@
 
             shuffled.forEach((p) => {
                 const img = document.createElement('img');
-                img.src = 'photography/' + p.n;
+                img.src = '../photography/' + p.n;
                 // intrinsic dimensions reserve layout space before load,
                 // so below-fold images stay below the fold and reveal on scroll
                 img.width = p.w;
